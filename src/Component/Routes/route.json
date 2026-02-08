@@ -1,0 +1,60 @@
+{
+  "route": [
+    {
+      "path": "/login",
+      "component": "Login",
+      "public": true
+    },
+    {
+      "path": "/register",
+      "component": "Register",
+      "public": true
+    },
+    {
+      "path": "/",
+      "component": "ProviderPage",
+      "public": false
+    },
+
+    
+    {
+      "path": "/provider/:id",
+      "component": "ProviderLayout",
+      "public": false,
+      "children": [
+        {
+          "path": "overview",
+          "component": "Overview"
+        },
+        {
+          "path": "compliance",
+          "component": "Compliance"
+        },
+        {
+          "path": "identifiers",
+          "component": "Identifiers"
+        },
+        {
+          "path": "practiceLocation",
+          "component": "PracticeLocation"
+        },
+        {
+          "path": "education",
+          "component": "Education"
+        },
+        {
+          "path": "research",
+          "component": "Research"
+        },
+        {
+          "path": "payment",
+          "component": "Payment"
+        },
+        {
+          "path": "digitalpresence",
+          "component": "DigitalPresence"
+        }
+      ]
+    }
+  ]
+}
