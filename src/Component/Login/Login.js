@@ -38,14 +38,7 @@ if (loggedUser) {
       const data = res.data;
 
       localStorage.setItem("token", data.token);
-      // localStorage.setItem(
-      //   "user",
-      //   JSON.stringify({
-      //     ...data.user,
-      //     role: credentials.role,
-      //   }),
-      // );
-
+     
       navigate("/", { replace: true });
     } catch (err) {
       setError("Server error");

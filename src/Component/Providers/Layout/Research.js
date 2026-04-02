@@ -1,6 +1,10 @@
 import React from "react";
 import { FaFlask, FaFileAlt } from "react-icons/fa";
-import { useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-table";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+} from "@tanstack/react-table";
 
 function Research({ provider }) {
   if (!provider) {
@@ -10,7 +14,6 @@ function Research({ provider }) {
   const clinicalTrials = provider.overview?.clinicalTrials || [];
   const publications = provider.overview?.publications || [];
 
-  // ------------------ Clinical Trials Table ------------------
   const clinicalColumns = [
     { header: "Trial Name", accessorKey: "name" },
     { header: "Role", accessorKey: "role" },
@@ -22,7 +25,9 @@ function Research({ provider }) {
         return (
           <span
             className={`px-3 py-1 rounded-full text-xs font-medium ${
-              status === "Recruiting" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+              status === "Recruiting"
+                ? "bg-green-100 text-green-700"
+                : "bg-blue-100 text-blue-700"
             }`}
           >
             {status}
@@ -38,7 +43,6 @@ function Research({ provider }) {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  // ------------------ Publications Table ------------------
   const pubColumns = [
     { header: "Title", accessorKey: "title" },
     {
@@ -56,7 +60,9 @@ function Research({ provider }) {
 
   return (
     <div className="p-6 bg-gray-50">
-      <h2 className="text-xl font-semibold mb-6">Research & Academic Activity</h2>
+      <h2 className="text-xl font-semibold mb-6">
+        Research & Academic Activity
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Clinical Trials */}
@@ -74,7 +80,10 @@ function Research({ provider }) {
                 <tr key={headerGroup.id} className="border-b text-gray-500">
                   {headerGroup.headers.map((header) => (
                     <th key={header.id} className="text-left py-2 font-medium">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -86,7 +95,11 @@ function Research({ provider }) {
                   <tr key={row.id} className="border-b last:border-none">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="py-3">
-                        {flexRender(cell.column.columnDef.cell ?? cell.column.columnDef.accessorKey, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell ??
+                            cell.column.columnDef.accessorKey,
+                          cell.getContext(),
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -94,7 +107,7 @@ function Research({ provider }) {
               ) : (
                 <tr>
                   <td colSpan={3} className="py-4 text-gray-500 text-center">
-                    No clinical trials available
+                    No records are available
                   </td>
                 </tr>
               )}
@@ -117,7 +130,10 @@ function Research({ provider }) {
                 <tr key={headerGroup.id} className="border-b text-gray-500">
                   {headerGroup.headers.map((header) => (
                     <th key={header.id} className="text-left py-2 font-medium">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -129,7 +145,11 @@ function Research({ provider }) {
                   <tr key={row.id} className="border-b last:border-none">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="py-3">
-                        {flexRender(cell.column.columnDef.cell ?? cell.column.columnDef.accessorKey, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell ??
+                            cell.column.columnDef.accessorKey,
+                          cell.getContext(),
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -137,7 +157,7 @@ function Research({ provider }) {
               ) : (
                 <tr>
                   <td colSpan={3} className="py-4 text-gray-500 text-center">
-                    No publications available
+                    No records are available
                   </td>
                 </tr>
               )}

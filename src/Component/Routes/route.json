@@ -11,12 +11,25 @@
       "public": true
     },
     {
+      "path": "/search",
+      "component": "StandaloneSearch",
+      "public": true
+    },
+    {
+      "path": "/search-test",
+      "component": "SearchTest",
+      "public": true
+    },
+    {
       "path": "/",
       "component": "ProviderPage",
       "public": false
     },
-
-    
+    {
+      "path": "/addproviders",
+      "component": "AddProvider",
+      "public": false
+    },
     {
       "path": "/provider/:id",
       "component": "ProviderLayout",
@@ -34,6 +47,15 @@
           "path": "identifiers",
           "component": "Identifiers"
         },
+         {
+          "path": "taxonomy",
+          "component": "Taxonomy"
+        },
+         {
+          "path": "healthinfoexchange",
+          "component": "HealthInfoExchange"
+        },
+
         {
           "path": "practiceLocation",
           "component": "PracticeLocation"

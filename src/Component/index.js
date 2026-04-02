@@ -5,13 +5,18 @@ import Register from "./Login/Register";
 
 import SummaryCard from "./Cards/SummaryCard";
 import Search from "./SearchBar/Search";
+import SearchTest from "./SearchTest";
+import StandaloneSearch from "./StandaloneSearch";
 import ProviderPage from "./Providers/ProviderPage";
 import ProviderLayout from "./Providers/Layout/Providerlayout";
+import AddProvider from "./Providers/Layout/AddProvider";
 
 // Provider Pages
 import Overview from "./Providers/Layout/Overview";
 import Compliance from "./Providers/Layout/Compliance";
 import Identifiers from "./Providers/Layout/Identifiers";
+import Taxonomy from "./Providers/Layout/taxonomy";
+import HealthInfoExchange from "./Providers/Layout/HealthInfoExchange";
 import PracticeLocation from "./Providers/Layout/PracticeLocation";
 import Education from "./Providers/Layout/Education";
 import Research from "./Providers/Layout/Research";
@@ -24,11 +29,16 @@ const routeComponents = {
   Header,
   SummaryCard,
   Search,
+  SearchTest,
+  StandaloneSearch,
   ProviderPage,
   ProviderLayout,
+  AddProvider,
   Overview,
   Compliance,
   Identifiers,
+  Taxonomy,
+  HealthInfoExchange,
   PracticeLocation,
   Education,
   Research,

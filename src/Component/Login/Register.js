@@ -30,13 +30,13 @@ const Register = () => {
     localStorage.setItem("users", JSON.stringify(users));
 
     alert("Registration Successful");
-    navigate("/Login"); // redirect to login
+    navigate("/login"); // redirect to login
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
-        onSubmit={handleRegister}  // ✅ Fixed
+        onSubmit={handleRegister}  
         className="w-full max-w-md bg-white rounded-xl shadow-lg p-8"
       >
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">

@@ -18,16 +18,26 @@ function App() {
         );
       }
 
+      
       if (route.public) {
         return <Route key={i} path={route.path} element={<Component />} />;
       }
 
+     
       return (
-        <Route key={i} element={<PrivateRoutes allowedRoles={route.role ? [route.role] : null} />}>
+        <Route
+          key={i}
+          element={
+            <PrivateRoutes
+              allowedRoles={route.role ? [route.role] : null} 
+            />
+          }
+        >
           <Route
             path={route.path}
             element={
               <>
+               
                 {routesComponents.Header && <routesComponents.Header />}
                 <Component />
               </>

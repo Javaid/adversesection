@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   IoLocationOutline,
   IoCallOutline,
@@ -6,120 +6,246 @@ import {
   IoMailOutline,
   IoBusinessOutline,
 } from "react-icons/io5";
+import { FaEdit, FaPlus } from "react-icons/fa";
+import axios from "axios";
 
-function PracticeLocation({ provider }) {
+function PracticeLocation({ provider, refreshProvider }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    id: null,
+    type: "secondary",
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "US",
+    phone: "",
+    fax: "",
+    email: "",
+  });
+  const [locations, setLocations] = useState(provider?.locations || []);
+
+  React.useEffect(() => {
+    setLocations(provider?.locations || []);
+  }, [provider?.locations]);
+
   if (!provider) {
     return <div className="text-red-500">Provider data not available</div>;
   }
 
-  const primary = provider.overview?.primaryLocation || {};
-  const secondary = provider.overview?.secondaryLocations || [];
+  const primary =
+    locations.find((loc) => loc.type === "primary") || locations[0] || {};
 
-  const fullAddress = `${primary.address || ""} ${primary.city || ""} ${primary.state || ""} ${primary.zip || ""}`;
-  const mapUrl = `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}&output=embed`;
+  const secondary = locations.filter((loc) => loc.type === "secondary") || [];
+  const activeStates = new Set(locations.filter((loc) => loc.state).map((loc) => loc.state)).size;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEdit = (location) => {
+    setFormData({
+      id: location.id || null,
+      type: location.type || "secondary",
+      name: location.name || "",
+      address: location.address || "",
+      city: location.city || "",
+      state: location.state || "",
+      zip: location.zip || "",
+      country: location.country || "US",
+      phone: location.phone || "",
+      fax: location.fax || "",
+      email: location.email || "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setFormData({
+      id: null,
+      type: "secondary",
+      name: "",
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "US",
+      phone: "",
+      fax: "",
+      email: "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      const payload = { ...formData, provider_id: provider.id };
+      const res = await axios.post(
+        `http://localhost:5000/api/providerss/${provider.id}/locations`,
+        payload,
+      );
+      setLocations(res.data.locations || []);
+      setIsModalOpen(false);
+      refreshProvider?.();
+    } catch (err) {
+      console.error("Save location error:", err);
+      alert("Failed to save location: " + (err.response?.data?.message || err.message));
+    }
+  };
 
   return (
-    <div className="px-6 pb-6 bg-gray-50">
-      <h2 className="text-xl font-semibold mb-4">
-        Practice & Contact Information
-      </h2>
+    <div className="px-6 pb-6 bg-gray-50 w-full overflow-x-hidden">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Practice & Contact Information</h2>
+        <button
+          onClick={handleAddNew}
+          className="flex items-center gap-2 px-4 py-2  text-blue-600 rounded hover:bg-blue-700"
+        >
+          <FaPlus /> 
+        </button>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-50 rounded-md text-blue-600">
-              <IoLocationOutline />
-            </div>
-            <div>
-              <h3 className="font-semibold">Primary Practice Location</h3>
-              <p className="text-sm text-gray-500">Main office</p>
-            </div>
-          </div>
-
-          <h4 className="font-semibold mb-2">{primary.name || "-"}</h4>
-          <p className="text-sm text-gray-600 mb-4">
-            {primary.address || "-"} <br />
-            {primary.city || "-"}, {primary.state || "-"} {primary.zip || "-"}
-          </p>
-
-          <hr className="my-4" />
-
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center gap-2">
-              <IoCallOutline className="text-gray-500" />
-              {primary.phone || "-"}
-            </div>
-            <div className="flex items-center gap-2">
-              <IoPrintOutline className="text-gray-500" />
-              {primary.fax || "-"}
-            </div>
-            <div className="flex items-center gap-2 text-blue-600">
-              <IoMailOutline />
-              {primary.email || "-"}
-            </div>
-          </div>
-
-          <div className="mt-6 h-36 rounded-md overflow-hidden border">
-            {fullAddress.trim() ? (
-              <iframe
-                title="Practice Location Map"
-                src={mapUrl}
-                className="w-full h-full border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center text-sm text-gray-500">
-                Map not available
-              </div>
-            )}
-          </div>
+      <div className="bg-white border border-gray-200 rounded-lg">
+        {/* Header Row */}
+        <div className="grid grid-cols-8 bg-gray-100 text-sm font-semibold text-gray-600 p-4 border-b">
+          <div>Type</div>
+          <div>Name</div>
+          <div>Address</div>
+          <div>City</div>
+          <div>State</div>
+          <div>Phone</div>
+          <div className="text-right">Map</div>
+          <div className="text-center">Action</div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-50 rounded-md text-blue-600">
-                <IoBusinessOutline />
-              </div>
-              <h3 className="font-semibold">Secondary Practice Locations</h3>
-            </div>
+        {/* Data Rows */}
+        {locations.length > 0 ? (
+          locations.map((loc, index) => {
+            const fullAddress = `${loc.address || ""} ${loc.city || ""} ${loc.state || ""} ${loc.zip || ""} ${loc.country || "United States"}`;
+            const mapLink = `https://www.google.com/maps?q=${encodeURIComponent(fullAddress)}`;
 
-            {secondary.length > 0 ? (
-              secondary.map((loc, idx) => (
-                <div
-                  key={idx}
-                  className={idx !== secondary.length - 1 ? "mb-4" : ""}
-                >
-                  <h4 className="font-semibold mb-1">{loc.name || "-"}</h4>
-                  <p className="text-sm text-gray-600">{loc.address || "-"}</p>
-                  {idx !== secondary.length - 1 && <hr className="my-4" />}
+            return (
+              <div
+                key={loc.id || index}
+                className="grid grid-cols-8 text-sm text-black-300 p-4 border-b last:border-none items-center"
+              >
+                <div className="capitalize font-medium text-black-800 px-2 break-words">
+                  {loc.type}
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-sm">
-                No secondary locations available.
-              </p>
-            )}
-          </div>
 
-          <div className="flex gap-6">
-            <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6 text-center">
-              <p className="text-3xl font-bold text-blue-800">
-                {1 + secondary.length}
-              </p>
-              <p className="text-sm text-gray-500">Total Locations</p>
-            </div>
+                <div className="px-4 break-words">{loc.name || "-"}</div>
 
-            <div className="flex-1 bg-white border border-gray-200 rounded-lg p-6 text-center">
-              <p className="text-3xl font-bold text-blue-800">
-                {Math.max(0, 1 + secondary.length - 1)}
-              </p>
-              <p className="text-sm text-gray-500">Active States</p>
-            </div>
+                <div className="px-4 break-words">{loc.address || "-"}</div>
+
+                <div className="px-4 break-words">{loc.city || "-"}</div>
+
+                <div className="px-2 break-words">{loc.state || "-"}</div>
+
+                <div className="px-2 break-words">{loc.phone || "-"}</div>
+
+                <div className="text-right px-2">
+                  {fullAddress.trim() ? (
+                    <a
+                      href={mapLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 font-medium hover:underline"
+                    >
+                      View Map
+                    </a>
+                  ) : (
+                    "-"
+                  )}
+                </div>
+
+                <div className="text-center px-2">
+                  <FaEdit
+                    className="text-blue-600 cursor-pointer inline"
+                    onClick={() => handleEdit(loc)}
+                  />
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-6 text-gray-500 text-sm">
+            No practice locations available.
           </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow text-center">
+          <p className="text-2xl md:text-3xl font-bold text-blue-800">
+            {1 + secondary.length}
+          </p>
+          <p className="text-xs md:text-sm text-gray-500 mt-1">
+            Total Locations
+          </p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow text-center">
+          <p className="text-2xl md:text-3xl font-bold text-blue-800">
+            {activeStates}
+          </p>
+          <p className="text-xs md:text-sm text-gray-500 mt-1">Active States</p>
         </div>
       </div>
+
+      {/* MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">
+              {formData.id ? "Edit Location" : "Add Location"}
+            </h3>
+
+            <div className="space-y-3 max-h-[calc(90vh-200px)] overflow-y-auto">
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="border p-2 w-full"
+              >
+                <option value="primary">Primary</option>
+                <option value="secondary">Secondary</option>
+                <option value="mailing">Mailing</option>
+              </select>
+
+              {["name", "address", "city", "state", "zip", "country", "phone", "fax", "email"].map(
+                (field) => (
+                  <input
+                    key={field}
+                    type="text"
+                    name={field}
+                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    className="border p-2 w-full"
+                  />
+                )
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+                onClick={handleSave}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { MdOutlineHealthAndSafety } from "react-icons/md";
 import {
   FiHome,
   FiShield,
@@ -11,7 +12,6 @@ import {
 } from "react-icons/fi";
 
 const Sidebar = () => {
-  
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
     if (section) {
@@ -23,7 +23,7 @@ const Sidebar = () => {
   };
 
   return (
-    <nav className="space-y-1">
+    <nav className="space-y-1 sticky top-2">
       <SidebarItem
         icon={FiHome}
         label="Overview"
@@ -43,9 +43,21 @@ const Sidebar = () => {
       />
 
       <SidebarItem
+        icon={FiFileText}
+        label="Taxonomy"
+        onClick={() => scrollToSection("taxonomy")}
+      />
+
+      <SidebarItem
+        icon={MdOutlineHealthAndSafety}
+        label="Health & Information"
+        onClick={() => scrollToSection("healthInfoExchange")}
+      />
+
+      <SidebarItem
         icon={FiMapPin}
         label="Practice Locations"
-        onClick={() => scrollToSection("practice")}
+        onClick={() => scrollToSection("practiceLocation")}
       />
 
       <SidebarItem
@@ -69,7 +81,7 @@ const Sidebar = () => {
       <SidebarItem
         icon={FiGlobe}
         label="Digital Presence"
-        onClick={() => scrollToSection("digital")}
+        onClick={() => scrollToSection("digitalPresence")}
       />
     </nav>
   );

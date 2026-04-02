@@ -1,183 +1,311 @@
-import React from "react";
-import { BsCheckCircle } from "react-icons/bs";
-import { AiOutlineWarning } from "react-icons/ai";
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-} from "@tanstack/react-table";
-const ComplianceTable = ({ title, columns, data }) => {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+import React, { useState, useEffect } from "react";
+import { FaPlus, FaEdit } from "react-icons/fa";
+import axios from "axios";
 
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
+function Compliance({ provider, refreshProvider }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [complianceData, setComplianceData] = useState([]);
+const [formData, setFormData] = useState({
+  npiType: "",
+  enumerationDate: "",
+  startDate: "",
+  endDate: "",
+  soleProprietor: false,
+  status: "",
+});
+  // Sync compliance data if provider changes
+  useEffect(() => {
+    setComplianceData(provider?.compliance || []);
+  }, [provider]);
 
-      <table className="w-full text-sm">
-        
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr
-              key={headerGroup.id}
-              className="border-b text-gray-500"
-            >
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="text-left py-3 font-medium"
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
+  // Handle Add
+  const handleAdd = () => {
+    setEditingIndex(null);
+  setFormData({
+  npiType: "",
+  enumerationDate: "",
+  startDate: "",
+  endDate: "",
+  soleProprietor: false,
+  status: "",
+});
+    setIsModalOpen(true);
+  };
 
+  // Handle Edit
+  const handleEdit = (index) => {
+    const selected = complianceData[index];
 
-        <tbody>
-          {table.getRowModel().rows.map((row) => {
-            const rowData = row.original;
+    setEditingIndex(index);
+  setFormData({
+  npiType: selected.npi_type || "",
+  enumerationDate: selected.enumeration_date
+    ? selected.enumeration_date.split("T")[0]
+    : "",
+  startDate: selected.start_date
+    ? selected.start_date.split("T")[0]
+    : "",
+  endDate: selected.end_date
+    ? selected.end_date.split("T")[0]
+    : "",
+  soleProprietor: selected.sole_proprietor || false,
+  status: selected.status || "",
+});
 
-            return (
-              <tr
-                key={row.id}
-                className="border-b last:border-none"
-              >
-                <td className="py-4 font-medium">
-                  {rowData.source}
-                </td>
+    setIsModalOpen(true);
+  };
 
-                <td>{rowData.actionType}</td>
+  // Handle Delete
+  const handleDelete = async (id, index) => {
+    if (!window.confirm("Are you sure you want to delete this compliance?")) return;
 
-                <td>{rowData.reason}</td>
+    try {
+      await axios.delete(
+        `http://localhost:5000/api/providerss/compliance/${id}`
+      );
 
-                <td>{rowData.effectiveDate}</td>
+      const updated = [...complianceData];
+      updated.splice(index, 1);
+      setComplianceData(updated);
 
-                <td>
-                  <div className="flex items-center gap-2">
-                    {rowData.status === "Clear" ? (
-                      <BsCheckCircle className="text-green-600" />
-                    ) : (
-                      <AiOutlineWarning className="text-yellow-500" />
-                    )}
+      refreshProvider?.();
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert("Delete failed. Check console.");
+    }
+  };
 
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        rowData.status === "Clear"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {rowData.status}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+  // Handle Input Change
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
 
-        
-          {table.getRowModel().rows.length === 0 && (
-            <tr>
-              <td
-                colSpan={5}
-                className="py-6 text-center text-gray-500"
-              >
-                No compliance records available
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-};
+  // Handle Save (Add + Update via backend logic)
+  const handleSave = async () => {
+   
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/providerss/${provider.id}/compliance`,
+        formData
+      );
 
+      const savedCompliance = response.data.compliance;
 
-function Compliance({ provider }) {
-  if (!provider) {
-    return (
-      <div className="text-red-500">
-        Provider data not available
-      </div>
-    );
-  }
+      let updated = [...complianceData];
 
-  const complianceData =
-    provider.overview?.compliance || [];
+      if (editingIndex !== null) {
+        updated[editingIndex] = savedCompliance;
+      } else {
+        updated.push(savedCompliance);
+      }
 
-  const columns = [
-    { header: "Source", accessorKey: "source" },
-    {
-      header: "Action Type",
-      accessorKey: "actionType",
-    },
-    { header: "Reason", accessorKey: "reason" },
-    {
-      header: "Effective Date",
-      accessorKey: "effectiveDate",
-    },
-    { header: "Status", accessorKey: "status" },
-  ];
+      setComplianceData(updated);
+      refreshProvider?.();
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Save failed", err);
+      alert("Save failed. Check console.");
+    }
+  };
 
   const clearCount = complianceData.filter(
-    (item) => item.status === "Clear"
+    (c) => c.status === "Clear"
   ).length;
 
   return (
-    <div className="p-6 bg-gray-50">
+    <div className="p-6 bg-gray-50 overflow-x-hidden">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold">
           Compliance & Exclusion Monitoring
         </h2>
 
-        <span className="text-green-700 text-sm font-medium">
-          ✔ {clearCount}/{complianceData.length} Sources
-          Clear
-        </span>
-      </div>
+        <div className="flex items-center gap-4">
+          <span className="text-green-700 text-sm font-medium">
+            ✔ {clearCount}/{complianceData.length} Sources Clear
+          </span>
 
-      <ComplianceTable
-        title="Federal & State Exclusion Status"
-        columns={columns}
-        data={complianceData}
-      />
-
-
-      <div className="grid grid-cols-4 gap-4 mt-6">
-        {[
-          { label: "OIG STATUS", status: "Clear" },
-          { label: "SAM.GOV", status: "Clear" },
-          { label: "FDA ACTIONS", status: "Resolved" },
-          { label: "STATE BOARDS", status: "Clear" },
-        ].map((item, index) => (
-          <div
-            key={index}
-            className="bg-white border rounded-lg p-4 flex flex-col gap-2"
+          <button
+            onClick={handleAdd}
+            className="flex items-center gap-2 px-3 py-2  text-blue-600 rounded hover:bg-blue-700"
           >
-            <span className="text-gray-500 text-xs uppercase">
-              {item.label}
-            </span>
-
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium w-fit ${
-                item.status === "Clear"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-yellow-100 text-yellow-700"
-              }`}
-            >
-              {item.status}
-            </span>
-          </div>
-        ))}
+            <FaPlus /> 
+          </button>
+        </div>
       </div>
+
+      {/* Table */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold mb-4 ">
+          Federal & State Exclusion Status
+        </h3>
+
+        <table className="w-full text-sm min-w-max">
+          <thead>
+            <tr className="border-b text-gray-500 bg-gray-100">
+             
+              <th className="text-left py-3 font-medium">NPI Type</th>
+             <th className="text-left py-3 font-medium">Start Date</th>
+              <th className="text-left py-3 font-medium">End Date</th>
+              <th className="text-left py-3 font-medium">
+                Enumeration Date
+              </th>
+              <th className="text-left py-3 font-medium">
+                Sole Proprietor
+              </th>
+              <th className="text-left py-3 font-medium">Status</th>
+              <th className="text-left py-3 font-medium">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {complianceData.length > 0 ? (
+              complianceData.map((row, index) => (
+                <tr key={row.id} className="border-b last:border-none">
+    
+
+                  <td>{row.npi_type}</td>
+
+
+<td>
+  {row.start_date
+    ? new Date(row.start_date).toISOString().split("T")[0]
+    : ""}
+</td>
+
+<td>
+  {row.end_date
+    ? new Date(row.end_date).toISOString().split("T")[0]
+    : ""}
+</td>
+
+
+                  <td>
+                    {row.enumeration_date
+                      ? new Date(row.enumeration_date)
+                          .toISOString()
+                          .split("T")[0]
+                      : ""}
+                  </td>
+
+                  <td>
+                    {row.sole_proprietor ? "Yes" : "No"}
+                  </td>
+
+                  <td>{row.status || "Active"}</td>
+
+                  <td className="flex gap-2 items-center pr-3 pt-2">
+                    <FaEdit
+                      className="text-blue-600 cursor-pointer w-5 h-5"
+                      onClick={() => handleEdit(index)}
+                    />
+
+                  
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="py-6 text-center text-gray-500"
+                >
+                  No records available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingIndex !== null
+                ? "Edit Compliance"
+                : "Add Compliance"}
+            </h3>
+
+         
+
+            <input
+              type="text"
+              name="npiType"
+              placeholder="NPI Type"
+              value={formData.npiType}
+              onChange={handleChange}
+              className="border p-2 w-full mb-2"
+            />
+
+            <input
+  type="date"
+  name="startDate"
+  value={formData.startDate}
+  onChange={handleChange}
+  className="border p-2 w-full mb-2"
+/>
+
+<input
+  type="date"
+  name="endDate"
+  value={formData.endDate}
+  onChange={handleChange}
+  className="border p-2 w-full mb-2"
+/>
+
+            <input
+              type="date"
+              name="enumerationDate"
+              value={formData.enumerationDate}
+              onChange={handleChange}
+              className="border p-2 w-full mb-2"
+            />
+
+            <label className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                name="soleProprietor"
+                checked={formData.soleProprietor}
+                onChange={handleChange}
+              />
+              Sole Proprietor
+            </label>
+
+            <input
+              type="text"
+              name="status"
+              placeholder="Status"
+              value={formData.status}
+              onChange={handleChange}
+              className="border p-2 w-full mb-2"
+            />
+
+
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+                onClick={handleSave}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
