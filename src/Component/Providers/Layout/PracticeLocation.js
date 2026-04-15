@@ -1,18 +1,12 @@
 import React, { useState } from "react";
-import {
-  IoLocationOutline,
-  IoCallOutline,
-  IoPrintOutline,
-  IoMailOutline,
-  IoBusinessOutline,
-} from "react-icons/io5";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import api from "../../../api/api";
 import SectionShell from "./common/SectionShell";
+import EntityModal from "./common/EntityModal";
+import useEntityModal from "./common/useEntityModal";
 
 function PracticeLocation({ provider, refreshProvider }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const getInitialFormData = () => ({
     id: null,
     type: "secondary",
     name: "",
@@ -25,6 +19,17 @@ function PracticeLocation({ provider, refreshProvider }) {
     fax: "",
     email: "",
   });
+
+  const {
+    isModalOpen,
+    editingKey,
+    formData,
+    openCreate,
+    openEdit,
+    closeModal,
+    resetModal,
+  } = useEntityModal(getInitialFormData);
+
   const [locations, setLocations] = useState(provider?.locations || []);
 
   React.useEffect(() => {
@@ -35,9 +40,6 @@ function PracticeLocation({ provider, refreshProvider }) {
     return <div className="text-red-500">Provider data not available</div>;
   }
 
-  const primary =
-    locations.find((loc) => loc.type === "primary") || locations[0] || {};
-
   const secondary = locations.filter((loc) => loc.type === "secondary") || [];
   const activeStates = new Set(locations.filter((loc) => loc.state).map((loc) => loc.state)).size;
 
@@ -47,7 +49,7 @@ function PracticeLocation({ provider, refreshProvider }) {
   };
 
   const handleEdit = (location) => {
-    setFormData({
+    openEdit(location.id || null, {
       id: location.id || null,
       type: location.type || "secondary",
       name: location.name || "",
@@ -60,24 +62,10 @@ function PracticeLocation({ provider, refreshProvider }) {
       fax: location.fax || "",
       email: location.email || "",
     });
-    setIsModalOpen(true);
   };
 
   const handleAddNew = () => {
-    setFormData({
-      id: null,
-      type: "secondary",
-      name: "",
-      address: "",
-      city: "",
-      state: "",
-      zip: "",
-      country: "US",
-      phone: "",
-      fax: "",
-      email: "",
-    });
-    setIsModalOpen(true);
+    openCreate();
   };
 
   const handleSave = async () => {
@@ -85,7 +73,7 @@ function PracticeLocation({ provider, refreshProvider }) {
       const payload = { ...formData, provider_id: provider.id };
       const res = await api.post(`/providerss/${provider.id}/locations`, payload);
       setLocations(res.data.locations || []);
-      setIsModalOpen(false);
+      resetModal();
       refreshProvider?.();
     } catch (err) {
       console.error("Save location error:", err);
@@ -106,10 +94,9 @@ function PracticeLocation({ provider, refreshProvider }) {
       )}
       className="bg-[#f5f9fd]"
     >
-
-      <div className="bg-white border border-gray-200 rounded-lg">
+      <div className="bg-white border border-[#d8e4ef] rounded-lg">
         {/* Header Row */}
-        <div className="grid grid-cols-8 bg-gray-100 text-sm font-semibold text-gray-600 p-4 border-b">
+        <div className="grid grid-cols-8 bg-[#f6f9fc] text-sm font-semibold text-[#6c8094] p-4 border-b border-[#d8e4ef]">
           <div>Type</div>
           <div>Name</div>
           <div>Address</div>
@@ -129,9 +116,9 @@ function PracticeLocation({ provider, refreshProvider }) {
             return (
               <div
                 key={loc.id || index}
-                className="grid grid-cols-8 text-sm text-black-300 p-4 border-b last:border-none items-center"
+                className="grid grid-cols-8 text-sm text-[#2e4358] p-4 border-b border-[#edf3f8] last:border-none items-center"
               >
-                <div className="capitalize font-medium text-black-800 px-2 break-words">
+                <div className="capitalize font-medium text-[#2e4358] px-2 break-words">
                   {loc.type}
                 </div>
 
@@ -170,82 +157,63 @@ function PracticeLocation({ provider, refreshProvider }) {
             );
           })
         ) : (
-          <div className="p-6 text-gray-500 text-sm">
+          <div className="p-6 text-[#7f96ab] text-sm">
             No practice locations available.
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-4 mt-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow text-center">
-          <p className="text-2xl md:text-3xl font-bold text-blue-800">
+        <div className="bg-white border border-[#d8e4ef] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow text-center">
+          <p className="text-2xl md:text-3xl font-bold text-[#2e4358]">
             {1 + secondary.length}
           </p>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">
+          <p className="text-xs md:text-sm text-[#7f96ab] mt-1">
             Total Locations
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow text-center">
-          <p className="text-2xl md:text-3xl font-bold text-blue-800">
+        <div className="bg-white border border-[#d8e4ef] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow text-center">
+          <p className="text-2xl md:text-3xl font-bold text-[#2e4358]">
             {activeStates}
           </p>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">Active States</p>
+          <p className="text-xs md:text-sm text-[#7f96ab] mt-1">Active States</p>
         </div>
       </div>
 
-      {/* MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
-              {formData.id ? "Edit Location" : "Add Location"}
-            </h3>
+      <EntityModal
+        isOpen={isModalOpen}
+        title={editingKey ? "Edit Location" : "Add Location"}
+        onClose={closeModal}
+        onSave={handleSave}
+        widthClassName="w-full max-w-md max-h-[90vh] overflow-y-auto"
+        bodyClassName="space-y-3 max-h-[calc(90vh-200px)] overflow-y-auto"
+      >
+        <select
+          name="type"
+          value={formData.type}
+          onChange={handleChange}
+          className="border p-2 w-full"
+        >
+          <option value="primary">Primary</option>
+          <option value="secondary">Secondary</option>
+          <option value="mailing">Mailing</option>
+        </select>
 
-            <div className="space-y-3 max-h-[calc(90vh-200px)] overflow-y-auto">
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="border p-2 w-full"
-              >
-                <option value="primary">Primary</option>
-                <option value="secondary">Secondary</option>
-                <option value="mailing">Mailing</option>
-              </select>
-
-              {["name", "address", "city", "state", "zip", "country", "phone", "fax", "email"].map(
-                (field) => (
-                  <input
-                    key={field}
-                    type="text"
-                    name={field}
-                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                    value={formData[field]}
-                    onChange={handleChange}
-                    className="border p-2 w-full"
-                  />
-                )
-              )}
-            </div>
-
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {["name", "address", "city", "state", "zip", "country", "phone", "fax", "email"].map(
+          (field) => (
+            <input
+              key={field}
+              type="text"
+              name={field}
+              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+              value={formData[field]}
+              onChange={handleChange}
+              className="border p-2 w-full"
+            />
+          )
+        )}
+      </EntityModal>
     </SectionShell>
   );
 }

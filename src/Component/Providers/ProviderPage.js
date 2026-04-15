@@ -4,7 +4,6 @@ import {
   BsCheckCircle,
   BsShieldFillCheck,
   BsShieldExclamation,
-  BsCurrencyDollar,
 } from "react-icons/bs";
 import { AiOutlineRise } from "react-icons/ai";
 import {
@@ -18,6 +17,12 @@ import SummaryCard from "../Cards/SummaryCard";
 import Search from "../SearchBar/Search";
 import api from "../../api/api";
 import { searchDoctors } from "../../api/search";
+import {
+  getNpiStatusBadgeClass,
+  getRiskMeta,
+  normalizeNpiStatus,
+  normalizeRiskKey,
+} from "../../constants/providerDisplay";
 
 function ProviderPage() {
   const navigate = useNavigate();
@@ -29,13 +34,6 @@ function ProviderPage() {
   const [total, setTotal] = useState(0);
   const [sortBy, setSortBy] = useState("npi_status");
   const [order, setOrder] = useState("ASC");
-
-  // Convert NPI status codes
-  const formatStatus = (status) => {
-    const statusMap = { Active: "Active", I: "Inactive" };
-    return statusMap[status] || status;
-  };
-
 
   // Fetch Elasticsearch search results
   useEffect(() => {
@@ -76,7 +74,7 @@ function ProviderPage() {
             npi: p.npi,
             speciality: p.speciality,
             location: p.location,
-            status: formatStatus(p.npi_status),
+            status: normalizeNpiStatus(p.npi_status),
             score: match?._score || 0,
           };
         });
@@ -111,7 +109,7 @@ function ProviderPage() {
           npi: p.npi,
           speciality: p.speciality,
           location: p.location,
-          status: formatStatus(p.npi_status),
+          status: normalizeNpiStatus(p.npi_status),
           Mips: p.mips_score,
           // payment: p.payment ? `$${p.payment}` : "$0",
           medicare: p.medicare_status,
@@ -136,21 +134,10 @@ function ProviderPage() {
 
   // Risk Icon
   const getRiskIcon = (risk) => {
-    if (risk === "Clear") return <BsShieldFillCheck className="w-4 h-4" />;
-    if (risk === "Review") return <IoWarningOutline className="w-4 h-4" />;
+    const riskKey = normalizeRiskKey(risk);
+    if (riskKey === "clear") return <BsShieldFillCheck className="w-4 h-4" />;
+    if (riskKey === "review") return <IoWarningOutline className="w-4 h-4" />;
     return <BsShieldExclamation className="w-4 h-4" />;
-  };
-
-  const getRiskStyles = (risk) => {
-    switch (risk) {
-      case "LOW":
-        return "bg-green-100 text-green-700";
-      case "MEDIUM":
-      case "HIGH":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-[#e8f3fa] text-[#2f8ec3]";
-    }
   };
 
   const medicareIcon = (status) =>
@@ -182,8 +169,8 @@ function ProviderPage() {
               <div
                 key={item.label}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition ${item.active
-                    ? "bg-[#e8f3fa] text-[#2f8ec3] border border-[#cde2f2]"
-                    : "text-[#6c8094] hover:bg-[#f5f9fd]"
+                  ? "bg-[#e8f3fa] text-[#2f8ec3] border border-[#cde2f2]"
+                  : "text-[#6c8094] hover:bg-[#f5f9fd]"
                   }`}
               >
                 <Icon className="w-4 h-4" />
@@ -313,10 +300,7 @@ function ProviderPage() {
 
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium max-w-[200px] text-center leading-snug ${p.status === "Active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                          }`}
+                        className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium max-w-[200px] text-center leading-snug ${getNpiStatusBadgeClass(p.status)}`}
                       >
                         {p.status}
                       </span>
@@ -337,14 +321,17 @@ function ProviderPage() {
                     </td>
 
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs ${getRiskStyles(
-                          p.risk,
-                        )}`}
-                      >
-                        {getRiskIcon(p.risk)}
-                        {p.risk}
-                      </span>
+                      {(() => {
+                        const riskMeta = getRiskMeta(p.risk);
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs ${riskMeta.chipClassName}`}
+                          >
+                            {getRiskIcon(p.risk)}
+                            {riskMeta.label}
+                          </span>
+                        );
+                      })()}
                     </td>
 
                     <td className="px-6 py-4">

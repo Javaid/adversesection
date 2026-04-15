@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import api from "../../../api/api";
 import SectionShell from "./common/SectionShell";
+import EntityModal from "./common/EntityModal";
+import { toFieldLabel } from "./common/formUtils";
+import useEntityModal from "./common/useEntityModal";
 
 function HealthInfoExchange({ provider }) {
   const [healthData, setHealthData] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
+  const getInitialFormData = () => ({
     endpoint_type: "",
     endpoint: "",
     endpoint_description: "",
@@ -16,6 +17,16 @@ function HealthInfoExchange({ provider }) {
     affiliation: "",
     endpoint_location: "",
   });
+
+  const {
+    isModalOpen,
+    editingKey,
+    formData,
+    openCreate,
+    openEdit,
+    closeModal,
+    resetModal,
+  } = useEntityModal(getInitialFormData);
 
   // Fetch health info on provider load
   useEffect(() => {
@@ -37,22 +48,11 @@ function HealthInfoExchange({ provider }) {
   };
 
   const handleAdd = () => {
-    setEditingId(null);
-    setFormData({
-      endpoint_type: "",
-      endpoint: "",
-      endpoint_description: "",
-      use_type: "",
-      content_type: "",
-      affiliation: "",
-      endpoint_location: "",
-    });
-    setIsModalOpen(true);
+    openCreate();
   };
 
   const handleEdit = (record) => {
-    setEditingId(record.id);
-    setFormData({
+    openEdit(record.id, {
       endpoint_type: record.endpoint_type || "",
       endpoint: record.endpoint || "",
       endpoint_description: record.endpoint_description || "",
@@ -61,24 +61,13 @@ function HealthInfoExchange({ provider }) {
       affiliation: record.affiliation || "",
       endpoint_location: record.endpoint_location || "",
     });
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure?")) return;
-    try {
-      await api.delete(`/providerss/health_info/${id}`);
-      fetchHealthInfo();
-    } catch (err) {
-      console.error("Delete error", err);
-    }
   };
 
   const handleSave = async () => {
     try {
       await api.post(`/providerss/${provider.id}/healthinfo`, formData);
       fetchHealthInfo();
-      setIsModalOpen(false);
+      resetModal();
     } catch (err) {
       console.error("Save error", err);
     }
@@ -96,11 +85,10 @@ function HealthInfoExchange({ provider }) {
         </button>
       )}
     >
-
       {/* Table */}
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="bg-white border border-[#d8e4ef] rounded-lg">
         {/* Header Row */}
-        <div className="grid grid-cols-8 bg-gray-100 text-sm font-semibold text-gray-600 p-4 border-b">
+        <div className="grid grid-cols-8 bg-[#f6f9fc] text-sm font-semibold text-[#6c8094] p-4 border-b border-[#d8e4ef]">
           <div>Endpoint Type</div>
           <div>Endpoint</div>
           <div>Description</div>
@@ -116,7 +104,7 @@ function HealthInfoExchange({ provider }) {
           healthData.map((row) => (
             <div
               key={row.id}
-              className="grid grid-cols-8 text-sm text-gray-700 p-4 border-b last:border-none items-center"
+              className="grid grid-cols-8 text-sm text-[#2e4358] p-4 border-b border-[#edf3f8] last:border-none items-center"
             >
               <div className="break-words">{row.endpoint_type || "-"}</div>
               <div className="break-words">{row.endpoint || "-"}</div>
@@ -134,59 +122,38 @@ function HealthInfoExchange({ provider }) {
             </div>
           ))
         ) : (
-          <div className="p-6 text-gray-500 text-sm text-center">
+          <div className="p-6 text-[#7f96ab] text-sm text-center">
             No records available
           </div>
         )}
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingId ? "Edit Health Info" : "Add Health Info"}
-            </h3>
-
-            {[
-              "endpoint_type",
-              "endpoint",
-              "endpoint_description",
-              "use_type",
-              "content_type",
-              "affiliation",
-              "endpoint_location",
-            ].map((field) => (
-              <input
-                key={field}
-                type="text"
-                name={field}
-                placeholder={field
-                  .replace("_", " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase())}
-                value={formData[field]}
-                onChange={handleChange}
-                className="border p-2 w-full mb-3"
-              />
-            ))}
-
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <EntityModal
+        isOpen={isModalOpen}
+        title={editingKey ? "Edit Health Info" : "Add Health Info"}
+        onClose={closeModal}
+        onSave={handleSave}
+      >
+        {[
+          "endpoint_type",
+          "endpoint",
+          "endpoint_description",
+          "use_type",
+          "content_type",
+          "affiliation",
+          "endpoint_location",
+        ].map((field) => (
+          <input
+            key={field}
+            type="text"
+            name={field}
+            placeholder={toFieldLabel(field)}
+            value={formData[field]}
+            onChange={handleChange}
+            className="border p-2 w-full mb-3"
+          />
+        ))}
+      </EntityModal>
     </SectionShell>
   );
 }

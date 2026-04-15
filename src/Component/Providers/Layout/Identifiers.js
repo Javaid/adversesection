@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import api from "../../../api/api";
+import EntityModal from "./common/EntityModal";
+import SectionShell from "./common/SectionShell";
+import { toFieldLabel } from "./common/formUtils";
+import useEntityModal from "./common/useEntityModal";
 
 function Identifiers({ provider, refreshProvider }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
   const [identifiersData, setIdentifiersData] = useState([]);
-  const [formData, setFormData] = useState({
+  const getInitialFormData = () => ({
     id: null,
     npi_number: "",
     pac_id: "",
@@ -19,6 +21,17 @@ function Identifiers({ provider, refreshProvider }) {
     other_issuer: "",
     value: "",
   });
+
+  const {
+    isModalOpen,
+    editingKey,
+    formData,
+    setFormData,
+    openCreate,
+    openEdit,
+    closeModal,
+    resetModal,
+  } = useEntityModal(getInitialFormData);
 
   // Fetch identifiers from backend
   const fetchIdentifiers = async () => {
@@ -69,13 +82,6 @@ function Identifiers({ provider, refreshProvider }) {
     { label: "Medicaid Enrollment ID", key: "medicaid_enrollment_id" },
   ];
 
-  const otherIdentifierFields = [
-    { label: "Issuer", key: "issuer" },
-    { label: "State", key: "state" },
-    { label: "Number", key: "number" },
-    { label: "Other Issuer", key: "other_issuer" },
-  ];
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -84,7 +90,7 @@ function Identifiers({ provider, refreshProvider }) {
   const handleEdit = (identifier) => {
     if (!identifier) return;
 
-    setFormData({
+    openEdit(identifier.id || "new", {
       id: identifier.id || null,
       npi_number: identifier.npi_number || "",
       pac_id: identifier.pac_id || "",
@@ -97,8 +103,10 @@ function Identifiers({ provider, refreshProvider }) {
       other_issuer: identifier.other_issuer || "",
       value: identifier.value || "",
     });
+  };
 
-    setIsModalOpen(true);
+  const handleAdd = () => {
+    openCreate();
   };
 
   const handleSave = async () => {
@@ -108,21 +116,7 @@ function Identifiers({ provider, refreshProvider }) {
       const data = res.data.identifiers || [];
       setIdentifiersData(data);
       localStorage.setItem(`identifiers_${provider.id}`, JSON.stringify(data));
-      setIsModalOpen(false);
-      setEditingIndex(null);
-      setFormData({
-        id: null,
-        npi_number: "",
-        pac_id: "",
-        tax_id: "",
-        medicare_enrollment_id: "",
-        medicaid_enrollment_id: "",
-        number: "",
-        issuer: "",
-        state: "",
-        other_issuer: "",
-        value: "",
-      });
+      resetModal();
       refreshProvider?.();
     } catch (err) {
       console.error("Save error response:", err.response?.data);
@@ -133,22 +127,21 @@ function Identifiers({ provider, refreshProvider }) {
   const licenses = provider?.overview?.licenses || [];
 
   return (
-    <div className="p-6 bg-gray-50 overflow-x-hidden">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">
-          Provider Identity & Identifiers
-        </h2>
+    <SectionShell
+      title="Provider Identity & Identifiers"
+      actions={(
         <button
-          onClick={() => handleEdit({})}
-          className="flex items-center gap-2 px-4 py-2  text-blue-600 rounded hover:bg-blue-700"
+          onClick={handleAdd}
+          className="flex items-center gap-2 px-4 py-2 text-[#2f8ec3] border border-[#bcd7ea] rounded-md hover:bg-[#e8f3fa]"
         >
           <FaPlus />
         </button>
-      </div>
+      )}
+    >
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* NATIONAL IDENTIFIERS */}
-        <div className="bg-white border rounded-md p-4">
+        <div className="bg-white border border-[#d8e4ef] rounded-lg p-4">
           <h3 className="font-semibold mb-4 flex justify-between items-center">
             National Identifiers
             <FaEdit
@@ -176,7 +169,7 @@ function Identifiers({ provider, refreshProvider }) {
             </h4>
             <table className="w-full text-sm min-w-max">
               <thead>
-                <tr className="text-gray-500 border-b bg-gray-100">
+                <tr className="text-[#6c8094] border-b border-[#d8e4ef] bg-[#f6f9fc]">
                   <th className="px-4 py-2 text-left font-medium">Issuer</th>
                   <th className="px-4 py-2 text-left font-medium">State</th>
                   <th className="px-4 py-2 text-left font-medium">Number</th>
@@ -191,7 +184,7 @@ function Identifiers({ provider, refreshProvider }) {
                   otherIdentifiers.map((item, index) => (
                     <tr
                       key={item.id || index}
-                      className="border-b hover:bg-gray-50 transition"
+                      className="border-b border-[#edf3f8] hover:bg-[#f8fbfe] transition"
                     >
                       <td className="px-4 py-2">{item.issuer || "-"}</td>
                       <td className="px-4 py-2">{item.state || "-"}</td>
@@ -220,12 +213,12 @@ function Identifiers({ provider, refreshProvider }) {
           </div>
         </div>
 
-        <div className="bg-white border rounded-md p-4 overflow-x-auto">
+        <div className="bg-white border border-[#d8e4ef] rounded-lg p-4 overflow-x-auto">
           <h3 className="font-semibold mb-4">State Medical Licenses</h3>
           {licenses.length > 0 ? (
             <table className="w-full text-sm min-w-max">
               <thead>
-                <tr className="text-gray-500 border-b bg-gray-50">
+                <tr className="text-[#6c8094] border-b border-[#d8e4ef] bg-[#f6f9fc]">
                   <th className="px-6 py-4 text-left font-medium">State</th>
                   <th className="px-6 py-4 text-left font-medium">License #</th>
                   <th className="px-6 py-4 text-left font-medium">Status</th>
@@ -236,7 +229,7 @@ function Identifiers({ provider, refreshProvider }) {
                 {licenses.map((license, idx) => (
                   <tr
                     key={idx}
-                    className="border-b hover:bg-gray-50 transition"
+                    className="border-b border-[#edf3f8] hover:bg-[#f8fbfe] transition"
                   >
                     <td className="px-6 py-4">{license.state}</td>
                     <td className="px-6 py-4">
@@ -256,46 +249,28 @@ function Identifiers({ provider, refreshProvider }) {
         </div>
       </div>
 
-      {/* MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingIndex !== null ? "Edit Identifier" : "Add Identifier"}
-            </h3>
-
-            {Object.keys(formData)
-              .filter((key) => key !== "id")
-              .map((key) => (
-                <input
-                  key={key}
-                  type="text"
-                  name={key}
-                  placeholder={key.replace(/_/g, " ")}
-                  value={formData[key]}
-                  onChange={handleChange}
-                  className="border p-2 w-full mb-2"
-                />
-              ))}
-
-            <div className="flex justify-end gap-2 mt-3">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <EntityModal
+        isOpen={isModalOpen}
+        title={editingKey !== null ? "Edit Identifier" : "Add Identifier"}
+        onClose={closeModal}
+        onSave={handleSave}
+        widthClassName="w-96 max-h-[90vh] overflow-y-auto"
+      >
+        {Object.keys(formData)
+          .filter((key) => key !== "id")
+          .map((key) => (
+            <input
+              key={key}
+              type="text"
+              name={key}
+              placeholder={toFieldLabel(key)}
+              value={formData[key]}
+              onChange={handleChange}
+              className="border p-2 w-full mb-2"
+            />
+          ))}
+      </EntityModal>
+    </SectionShell>
   );
 }
 

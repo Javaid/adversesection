@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import api from "../../../api/api";
 import SectionShell from "./common/SectionShell";
+import EntityModal from "./common/EntityModal";
+import { toFieldLabel } from "./common/formUtils";
+import useEntityModal from "./common/useEntityModal";
 
 function Taxonomy({ provider }) {
     const [taxonomyData, setTaxonomyData] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-
-    const [formData, setFormData] = useState({
+    const getInitialFormData = () => ({
         primary_taxonomy: "",
         selected_taxonomy: "",
         state: "",
@@ -17,6 +17,17 @@ function Taxonomy({ provider }) {
         document_link: "",
         source_url: "",
     });
+
+    const {
+        isModalOpen,
+        editingKey,
+        formData,
+        setFormData,
+        openCreate,
+        openEdit,
+        closeModal,
+        resetModal,
+    } = useEntityModal(getInitialFormData);
 
     useEffect(() => {
         if (provider?.id) {
@@ -39,35 +50,22 @@ function Taxonomy({ provider }) {
     };
 
     const handleAdd = () => {
-        setEditingId(null);
-        setFormData({
-            primary_taxonomy: "",
-            selected_taxonomy: "",
-            state: "",
-            license_number: "",
-            status: "",
-            document_link: "",
-            source_url: "",
-        });
-        setIsModalOpen(true);
+        openCreate();
     };
 
     const handleEdit = (row) => {
-        setEditingId(row.id);
-        setFormData({ ...row, taxonomyId: row.id });
-        setIsModalOpen(true);
+        openEdit(row.id, { ...row, taxonomyId: row.id });
     };
 
     const handleSave = async () => {
         try {
-            if (editingId) {
-                await api.put(`/providerss/${provider.id}/taxonomy/${editingId}`, formData);
+            if (editingKey) {
+                await api.put(`/providerss/${provider.id}/taxonomy/${editingKey}`, formData);
             } else {
                 await api.post(`/providerss/${provider.id}/taxonomy`, formData);
             }
             await fetchTaxonomies();
-            setIsModalOpen(false);
-            setEditingId(null);
+            resetModal();
         } catch (err) {
             console.error("Save error", err);
         }
@@ -123,41 +121,24 @@ function Taxonomy({ provider }) {
                 )}
             </div>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-                    <div className="bg-white p-6 rounded-lg w-96">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {editingId ? "Edit Taxonomy" : "Add Taxonomy"}
-                        </h3>
-
-                        {Object.keys(formData).map((field) => (
-                            <input
-                                key={field}
-                                type="text"
-                                name={field}
-                                placeholder={field
-                                    .replace(/_/g, " ")
-                                    .replace(/\b\w/g, (letter) => letter.toUpperCase())}
-                                value={formData[field]}
-                                onChange={handleChange}
-                                className="border p-2 w-full mb-3"
-                            />
-                        ))}
-
-                        <div className="flex justify-end gap-2">
-                            <button
-                                className="px-4 py-2 bg-gray-200 rounded"
-                                onClick={() => setIsModalOpen(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={handleSave}>
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <EntityModal
+                isOpen={isModalOpen}
+                title={editingKey ? "Edit Taxonomy" : "Add Taxonomy"}
+                onClose={closeModal}
+                onSave={handleSave}
+            >
+                {Object.keys(formData).map((field) => (
+                    <input
+                        key={field}
+                        type="text"
+                        name={field}
+                        placeholder={toFieldLabel(field)}
+                        value={formData[field]}
+                        onChange={handleChange}
+                        className="border p-2 w-full mb-3"
+                    />
+                ))}
+            </EntityModal>
         </SectionShell>
     );
 }

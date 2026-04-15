@@ -7,6 +7,12 @@ import { MdVerified } from "react-icons/md";
 
 import Sidebar from "../../Sidebar/Sidebar";
 import api from "../../../api/api";
+import {
+    getNpiStatusBadgeClass,
+    getRiskMeta,
+    normalizeNpiStatus,
+    normalizeRiskKey,
+} from "../../../constants/providerDisplay";
 
 import Compliance from "./Compliance";
 import Identifiers from "./Identifiers";
@@ -17,7 +23,7 @@ import Education from "./Education";
 import Research from "./Research";
 import DigitalPresence from "./DigitalPresence";
 
-function Providerlayout() {
+function ProviderLayout() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [provider, setProvider] = useState(null);
@@ -53,9 +59,7 @@ function Providerlayout() {
     }, [id]);
 
     const status = useMemo(() => {
-        if (!provider?.npi_status) return "Unknown";
-        if (provider.npi_status === "I") return "Inactive";
-        return provider.npi_status;
+        return normalizeNpiStatus(provider?.npi_status);
     }, [provider?.npi_status]);
 
     const issues = useMemo(() => {
@@ -89,38 +93,17 @@ function Providerlayout() {
         return result;
     }, [provider]);
 
-    const riskConfig = {
-        low: {
-            label: "LOW RISK",
-            bg: "bg-green-50",
-            border: "border-green-200",
-            text: "text-green-700",
-            icon: <BsCheckCircle className="text-green-600 text-xl flex-shrink-0" />,
-        },
-        medium: {
-            label: "MEDIUM RISK",
-            bg: "bg-pink-50",
-            border: "border-red-200",
-            text: "text-yellow-700",
-            icon: <FiAlertTriangle className="text-yellow-600 text-xl flex-shrink-0" />,
-        },
-        high: {
-            label: "HIGH RISK",
-            bg: "bg-red-50",
-            border: "border-red-200",
-            text: "text-red-700",
-            icon: <RxCrossCircled className="text-red-600 text-xl flex-shrink-0" />,
-        },
-        review: {
-            label: "UNDER REVIEW",
-            bg: "bg-blue-50",
-            border: "border-red-200",
-            text: "text-blue-700",
-            icon: <RxCrossCircled className="text-blue-600 text-xl flex-shrink-0" />,
-        },
+    const riskMeta = getRiskMeta(provider?.overallRisk);
+    const riskKey = normalizeRiskKey(provider?.overallRisk);
+
+    const riskIconByKey = {
+        clear: <BsCheckCircle className="text-green-600 text-xl flex-shrink-0" />,
+        review: <FiAlertTriangle className="text-yellow-600 text-xl flex-shrink-0" />,
+        risk: <RxCrossCircled className="text-red-600 text-xl flex-shrink-0" />,
+        unknown: <RxCrossCircled className="text-[#2f8ec3] text-xl flex-shrink-0" />,
     };
 
-    const risk = riskConfig[String(provider?.overallRisk || "low").toLowerCase()] || riskConfig.low;
+    const riskIcon = riskIconByKey[riskKey] || riskIconByKey.unknown;
 
     if (loading) return <div>Loading provider data...</div>;
     if (!provider) return <div>Provider not found</div>;
@@ -154,7 +137,7 @@ function Providerlayout() {
                                 <div className="flex items-center gap-3 mt-2 text-sm flex-wrap">
                                     <span className="truncate">NPI: {provider.npi}</span>
                                     <span
-                                        className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${provider.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                                        className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${getNpiStatusBadgeClass(status)}`}
                                     >
                                         {status}
                                     </span>
@@ -163,11 +146,11 @@ function Providerlayout() {
                             </div>
                         </div>
 
-                        <div className={`rounded-lg p-3 w-full md:w-44 flex items-center gap-2 flex-shrink-0 ${risk.bg} ${risk.border}`}>
-                            {risk.icon}
+                        <div className={`rounded-lg border p-3 w-full md:w-44 flex items-center gap-2 flex-shrink-0 ${riskMeta.panelClassName}`}>
+                            {riskIcon}
                             <div className="text-left min-w-0">
                                 <p className="text-sm text-[#6c8094]">OVERALL RISK</p>
-                                <p className={`text-sm font-semibold ${risk.text}`}>{risk.label}</p>
+                                <p className="text-sm font-semibold">{riskMeta.label.toUpperCase()}</p>
                             </div>
                         </div>
                     </div>
@@ -234,4 +217,4 @@ function Providerlayout() {
     );
 }
 
-export default Providerlayout;
+export default ProviderLayout;

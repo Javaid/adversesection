@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import { FaPlus, FaEdit } from "react-icons/fa";
 import api from "../../../api/api";
 import SectionShell from "./common/SectionShell";
+import EntityModal from "./common/EntityModal";
+import useEntityModal from "./common/useEntityModal";
 
 function Compliance({ provider, refreshProvider }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
   const [complianceData, setComplianceData] = useState([]);
-  const [formData, setFormData] = useState({
+  const getInitialFormData = () => ({
     npiType: "",
     enumerationDate: "",
     startDate: "",
@@ -15,6 +15,16 @@ function Compliance({ provider, refreshProvider }) {
     soleProprietor: false,
     status: "",
   });
+
+  const {
+    isModalOpen,
+    editingKey,
+    formData,
+    openCreate,
+    openEdit,
+    closeModal,
+    resetModal,
+  } = useEntityModal(getInitialFormData);
   // Sync compliance data if provider changes
   useEffect(() => {
     setComplianceData(provider?.compliance || []);
@@ -22,24 +32,14 @@ function Compliance({ provider, refreshProvider }) {
 
   // Handle Add
   const handleAdd = () => {
-    setEditingIndex(null);
-    setFormData({
-      npiType: "",
-      enumerationDate: "",
-      startDate: "",
-      endDate: "",
-      soleProprietor: false,
-      status: "",
-    });
-    setIsModalOpen(true);
+    openCreate();
   };
 
   // Handle Edit
   const handleEdit = (index) => {
     const selected = complianceData[index];
 
-    setEditingIndex(index);
-    setFormData({
+    openEdit(index, {
       npiType: selected.npi_type || "",
       enumerationDate: selected.enumeration_date
         ? selected.enumeration_date.split("T")[0]
@@ -53,26 +53,6 @@ function Compliance({ provider, refreshProvider }) {
       soleProprietor: selected.sole_proprietor || false,
       status: selected.status || "",
     });
-
-    setIsModalOpen(true);
-  };
-
-  // Handle Delete
-  const handleDelete = async (id, index) => {
-    if (!window.confirm("Are you sure you want to delete this compliance?")) return;
-
-    try {
-      await api.delete(`/providerss/compliance/${id}`);
-
-      const updated = [...complianceData];
-      updated.splice(index, 1);
-      setComplianceData(updated);
-
-      refreshProvider?.();
-    } catch (err) {
-      console.error("Delete failed", err);
-      alert("Delete failed. Check console.");
-    }
   };
 
   // Handle Input Change
@@ -86,7 +66,6 @@ function Compliance({ provider, refreshProvider }) {
 
   // Handle Save (Add + Update via backend logic)
   const handleSave = async () => {
-
     try {
       const response = await api.post(
         `/providerss/${provider.id}/compliance`,
@@ -97,15 +76,15 @@ function Compliance({ provider, refreshProvider }) {
 
       let updated = [...complianceData];
 
-      if (editingIndex !== null) {
-        updated[editingIndex] = savedCompliance;
+      if (editingKey !== null) {
+        updated[editingKey] = savedCompliance;
       } else {
         updated.push(savedCompliance);
       }
 
       setComplianceData(updated);
       refreshProvider?.();
-      setIsModalOpen(false);
+      resetModal();
     } catch (err) {
       console.error("Save failed", err);
       alert("Save failed. Check console.");
@@ -133,7 +112,6 @@ function Compliance({ provider, refreshProvider }) {
         </>
       )}
     >
-
       {/* Table */}
       <div className="bg-white border border-[#d8e4ef] rounded-lg p-6 overflow-x-auto">
         <h3 className="text-lg font-semibold text-[#2e4358] mb-4 ">
@@ -143,7 +121,6 @@ function Compliance({ provider, refreshProvider }) {
         <table className="w-full text-sm min-w-max">
           <thead>
             <tr className="border-b border-[#d8e4ef] text-[#6c8094] bg-[#f6f9fc]">
-
               <th className="text-left py-3 font-medium">NPI Type</th>
               <th className="text-left py-3 font-medium">Start Date</th>
               <th className="text-left py-3 font-medium">End Date</th>
@@ -162,11 +139,7 @@ function Compliance({ provider, refreshProvider }) {
             {complianceData.length > 0 ? (
               complianceData.map((row, index) => (
                 <tr key={row.id} className="border-b border-[#edf3f8] last:border-none">
-
-
                   <td>{row.npi_type}</td>
-
-
                   <td>
                     {row.start_date
                       ? new Date(row.start_date).toISOString().split("T")[0]
@@ -178,8 +151,6 @@ function Compliance({ provider, refreshProvider }) {
                       ? new Date(row.end_date).toISOString().split("T")[0]
                       : ""}
                   </td>
-
-
                   <td>
                     {row.enumeration_date
                       ? new Date(row.enumeration_date)
@@ -199,8 +170,6 @@ function Compliance({ provider, refreshProvider }) {
                       className="text-blue-600 cursor-pointer w-5 h-5"
                       onClick={() => handleEdit(index)}
                     />
-
-
                   </td>
                 </tr>
               ))
@@ -215,89 +184,64 @@ function Compliance({ provider, refreshProvider }) {
         </table>
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingIndex !== null
-                ? "Edit Compliance"
-                : "Add Compliance"}
-            </h3>
+      <EntityModal
+        isOpen={isModalOpen}
+        title={editingKey !== null ? "Edit Compliance" : "Add Compliance"}
+        onClose={closeModal}
+        onSave={handleSave}
+      >
+        <input
+          type="text"
+          name="npiType"
+          placeholder="NPI Type"
+          value={formData.npiType}
+          onChange={handleChange}
+          className="border p-2 w-full mb-2"
+        />
 
+        <input
+          type="date"
+          name="startDate"
+          value={formData.startDate}
+          onChange={handleChange}
+          className="border p-2 w-full mb-2"
+        />
 
+        <input
+          type="date"
+          name="endDate"
+          value={formData.endDate}
+          onChange={handleChange}
+          className="border p-2 w-full mb-2"
+        />
 
-            <input
-              type="text"
-              name="npiType"
-              placeholder="NPI Type"
-              value={formData.npiType}
-              onChange={handleChange}
-              className="border p-2 w-full mb-2"
-            />
+        <input
+          type="date"
+          name="enumerationDate"
+          value={formData.enumerationDate}
+          onChange={handleChange}
+          className="border p-2 w-full mb-2"
+        />
 
-            <input
-              type="date"
-              name="startDate"
-              value={formData.startDate}
-              onChange={handleChange}
-              className="border p-2 w-full mb-2"
-            />
+        <label className="flex items-center gap-2 mb-2">
+          <input
+            type="checkbox"
+            name="soleProprietor"
+            checked={formData.soleProprietor}
+            onChange={handleChange}
+          />
+          Sole Proprietor
+        </label>
 
-            <input
-              type="date"
-              name="endDate"
-              value={formData.endDate}
-              onChange={handleChange}
-              className="border p-2 w-full mb-2"
-            />
-
-            <input
-              type="date"
-              name="enumerationDate"
-              value={formData.enumerationDate}
-              onChange={handleChange}
-              className="border p-2 w-full mb-2"
-            />
-
-            <label className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                name="soleProprietor"
-                checked={formData.soleProprietor}
-                onChange={handleChange}
-              />
-              Sole Proprietor
-            </label>
-
-            <input
-              type="text"
-              name="status"
-              placeholder="Status"
-              value={formData.status}
-              onChange={handleChange}
-              className="border p-2 w-full mb-2"
-            />
-
-
-            <div className="flex justify-end gap-2">
-              <button
-                className="px-4 py-2 bg-gray-200 rounded"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <input
+          type="text"
+          name="status"
+          placeholder="Status"
+          value={formData.status}
+          onChange={handleChange}
+          className="border p-2 w-full mb-2"
+        />
+      </EntityModal>
     </SectionShell>
   );
 }

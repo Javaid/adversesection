@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   flexRender,
 } from "@tanstack/react-table";
+import SectionShell from "./common/SectionShell";
 
 function Research({ provider }) {
   if (!provider) {
@@ -24,11 +25,10 @@ function Research({ provider }) {
         const status = getValue();
         return (
           <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
-              status === "Recruiting"
+            className={`px-3 py-1 rounded-full text-xs font-medium ${status === "Recruiting"
                 ? "bg-green-100 text-green-700"
                 : "bg-blue-100 text-blue-700"
-            }`}
+              }`}
           >
             {status}
           </span>
@@ -59,14 +59,10 @@ function Research({ provider }) {
   });
 
   return (
-    <div className="p-6 bg-gray-50">
-      <h2 className="text-xl font-semibold mb-6">
-        Research & Academic Activity
-      </h2>
-
+    <SectionShell title="Research & Academic Activity">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Clinical Trials */}
-        <div className="bg-white border rounded-md p-5">
+        <div className="bg-white border border-[#d8e4ef] rounded-lg p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-blue-50 rounded-md text-blue-600">
               <FaFlask size={18} />
@@ -77,7 +73,7 @@ function Research({ provider }) {
           <table className="w-full text-sm">
             <thead>
               {clinicalTable.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b text-gray-500">
+                <tr key={headerGroup.id} className="border-b border-[#d8e4ef] text-[#6c8094] bg-[#f6f9fc]">
                   {headerGroup.headers.map((header) => (
                     <th key={header.id} className="text-left py-2 font-medium">
                       {flexRender(
@@ -92,12 +88,12 @@ function Research({ provider }) {
             <tbody>
               {clinicalTable.getRowModel().rows.length > 0 ? (
                 clinicalTable.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="border-b last:border-none">
+                  <tr key={row.id} className="border-b border-[#edf3f8] last:border-none">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="py-3">
                         {flexRender(
                           cell.column.columnDef.cell ??
-                            cell.column.columnDef.accessorKey,
+                          cell.column.columnDef.accessorKey,
                           cell.getContext(),
                         )}
                       </td>
@@ -116,7 +112,7 @@ function Research({ provider }) {
         </div>
 
         {/* Publications */}
-        <div className="bg-white border rounded-md p-5">
+        <div className="bg-white border border-[#d8e4ef] rounded-lg p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-purple-50 rounded-md text-purple-600">
               <FaFileAlt size={18} />
@@ -127,7 +123,7 @@ function Research({ provider }) {
           <table className="w-full text-sm">
             <thead>
               {pubTable.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} className="border-b text-gray-500">
+                <tr key={headerGroup.id} className="border-b border-[#d8e4ef] text-[#6c8094] bg-[#f6f9fc]">
                   {headerGroup.headers.map((header) => (
                     <th key={header.id} className="text-left py-2 font-medium">
                       {flexRender(
@@ -142,12 +138,12 @@ function Research({ provider }) {
             <tbody>
               {pubTable.getRowModel().rows.length > 0 ? (
                 pubTable.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="border-b last:border-none">
+                  <tr key={row.id} className="border-b border-[#edf3f8] last:border-none">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="py-3">
                         {flexRender(
                           cell.column.columnDef.cell ??
-                            cell.column.columnDef.accessorKey,
+                          cell.column.columnDef.accessorKey,
                           cell.getContext(),
                         )}
                       </td>
@@ -165,7 +161,7 @@ function Research({ provider }) {
           </table>
         </div>
       </div>
-    </div>
+    </SectionShell>
   );
 }
 
