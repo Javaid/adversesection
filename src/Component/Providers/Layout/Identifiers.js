@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaEdit, FaPlus } from "react-icons/fa";
-import axios from "axios";
+import api from "../../../api/api";
 
 function Identifiers({ provider, refreshProvider }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,11 +24,8 @@ function Identifiers({ provider, refreshProvider }) {
   const fetchIdentifiers = async () => {
     if (!provider?.id) return;
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/providerss/${provider.id}/identifiers`,
-      );
+      const res = await api.get(`/providerss/${provider.id}/identifiers`);
       const data = res.data.identifiers || [];
-      console.log("Fetched identifiers:", data);
       setIdentifiersData(data);
       localStorage.setItem(`identifiers_${provider.id}`, JSON.stringify(data));
     } catch (err) {
@@ -47,22 +44,22 @@ function Identifiers({ provider, refreshProvider }) {
   }, [provider?.id, refreshProvider]);
 
   const mainIdentifier = identifiersData.find(
-  (item) =>
-    item.npi_number ||
-    item.pac_id ||
-    item.tax_id ||
-    item.medicare_enrollment_id ||
-    item.medicaid_enrollment_id
-) || {};
+    (item) =>
+      item.npi_number ||
+      item.pac_id ||
+      item.tax_id ||
+      item.medicare_enrollment_id ||
+      item.medicaid_enrollment_id,
+  ) || {};
 
-const otherIdentifiers = identifiersData.filter(
-  (item) =>
-    !item.npi_number &&
-    !item.pac_id &&
-    !item.tax_id &&
-    !item.medicare_enrollment_id &&
-    !item.medicaid_enrollment_id
-);
+  const otherIdentifiers = identifiersData.filter(
+    (item) =>
+      !item.npi_number &&
+      !item.pac_id &&
+      !item.tax_id &&
+      !item.medicare_enrollment_id &&
+      !item.medicaid_enrollment_id,
+  );
 
   const nationalFields = [
     { label: "NPI Number", key: "npi_number" },
@@ -107,11 +104,7 @@ const otherIdentifiers = identifiersData.filter(
   const handleSave = async () => {
     try {
       const payload = { ...formData, provider_id: provider.id };
-      const res = await axios.post(
-        `http://localhost:5000/api/providerss/${provider.id}/identifiers`,
-        payload,
-      );
-      console.log("Save response:", res.data);
+      const res = await api.post(`/providerss/${provider.id}/identifiers`, payload);
       const data = res.data.identifiers || [];
       setIdentifiersData(data);
       localStorage.setItem(`identifiers_${provider.id}`, JSON.stringify(data));

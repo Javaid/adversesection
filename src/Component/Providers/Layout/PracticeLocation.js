@@ -7,7 +7,8 @@ import {
   IoBusinessOutline,
 } from "react-icons/io5";
 import { FaEdit, FaPlus } from "react-icons/fa";
-import axios from "axios";
+import api from "../../../api/api";
+import SectionShell from "./common/SectionShell";
 
 function PracticeLocation({ provider, refreshProvider }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,10 +83,7 @@ function PracticeLocation({ provider, refreshProvider }) {
   const handleSave = async () => {
     try {
       const payload = { ...formData, provider_id: provider.id };
-      const res = await axios.post(
-        `http://localhost:5000/api/providerss/${provider.id}/locations`,
-        payload,
-      );
+      const res = await api.post(`/providerss/${provider.id}/locations`, payload);
       setLocations(res.data.locations || []);
       setIsModalOpen(false);
       refreshProvider?.();
@@ -96,16 +94,18 @@ function PracticeLocation({ provider, refreshProvider }) {
   };
 
   return (
-    <div className="px-6 pb-6 bg-gray-50 w-full overflow-x-hidden">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Practice & Contact Information</h2>
+    <SectionShell
+      title="Practice & Contact Information"
+      actions={(
         <button
           onClick={handleAddNew}
-          className="flex items-center gap-2 px-4 py-2  text-blue-600 rounded hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 text-[#2f8ec3] border border-[#bcd7ea] rounded-md hover:bg-[#e8f3fa]"
         >
-          <FaPlus /> 
+          <FaPlus />
         </button>
-      </div>
+      )}
+      className="bg-[#f5f9fd]"
+    >
 
       <div className="bg-white border border-gray-200 rounded-lg">
         {/* Header Row */}
@@ -246,7 +246,7 @@ function PracticeLocation({ provider, refreshProvider }) {
           </div>
         </div>
       )}
-    </div>
+    </SectionShell>
   );
 }
 

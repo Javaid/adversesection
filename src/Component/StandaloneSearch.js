@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaMapMarkerAlt, FaUserMd } from "react-icons/fa";
+import { searchDoctors } from "../api/search";
 
 const StandaloneSearch = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -7,7 +8,7 @@ const StandaloneSearch = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const searchDoctors = async (text) => {
+  const handleSearch = async (text) => {
     if (!text.trim()) {
       setDoctors([]);
       return;
@@ -15,21 +16,13 @@ const StandaloneSearch = () => {
 
     setLoading(true);
     setError(null);
-    
+
     try {
-      console.log('Searching for:', text);
-      const res = await fetch(`/api/doctors/search?query=${encodeURIComponent(text)}`);
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const data = await res.json();
-      console.log('Search results:', data);
-      setDoctors(data);
+      const data = await searchDoctors(text);
+      setDoctors(Array.isArray(data?.results) ? data.results : []);
     } catch (err) {
       console.error("Search error:", err);
-      setError(err.message);
+      setError(err?.response?.data?.error || err.message);
       setDoctors([]);
     } finally {
       setLoading(false);
@@ -38,7 +31,7 @@ const StandaloneSearch = () => {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      searchDoctors(searchQuery);
+      handleSearch(searchQuery);
     }, 300);
 
     return () => clearTimeout(timeout);
@@ -99,35 +92,35 @@ const StandaloneSearch = () => {
                           <FaUserMd className="text-blue-600 text-2xl" />
                         </div>
                       </div>
-                      
+
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                          {doc._source?.name || 'Unknown Name'}
+                          {doc?.name || "Unknown Name"}
                         </h3>
-                        
+
                         <div className="space-y-2">
-                          {doc._source?.speciality && (
+                          {doc?.speciality && (
                             <div className="flex items-center text-gray-600">
                               <FaUserMd className="mr-2 text-sm" />
-                              <span>{doc._source.speciality}</span>
+                              <span>{doc.speciality}</span>
                             </div>
                           )}
-                          
-                          {doc._source?.location && (
+
+                          {doc?.location && (
                             <div className="flex items-center text-gray-600">
                               <FaMapMarkerAlt className="mr-2 text-sm" />
-                              <span>{doc._source.location}</span>
+                              <span>{doc.location}</span>
                             </div>
                           )}
-                          
-                          {doc._source?.organization_name && (
+
+                          {doc?.organization_name && (
                             <div className="text-sm text-gray-500">
-                              Organization: {doc._source.organization_name}
+                              Organization: {doc.organization_name}
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Score indicator */}
                         {doc._score && (
                           <div className="mt-3">

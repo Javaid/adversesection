@@ -15,17 +15,17 @@ const Search = ({ searchQuery, setSearchQuery, setPage }) => {
   }, [inputValue]);
 
   return (
-    <div className="max-w-7xl mx-auto mt-6">
-      <div className="bg-white border border-gray-200 rounded-full shadow-sm px-4 py-2">
+    <div className="w-full px-4 mt-6">
+      <div className="bg-white border border-[#d8e4ef] rounded-full shadow-sm px-4 py-2">
         <div className="relative flex items-center">
-          <FaSearch className="text-gray-400 ml-2 mr-3" />
+          <FaSearch className="text-[#89a0b5] ml-2 mr-3" />
 
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Search by name, NPI, or specialty..."
-            className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-400"
+            className="w-full bg-transparent outline-none text-[#2e4358] placeholder-[#8aa0b5]"
           />
 
           {inputValue && (
@@ -34,7 +34,7 @@ const Search = ({ searchQuery, setSearchQuery, setPage }) => {
                 setInputValue("");
                 setSearchQuery("");
               }}
-              className="text-gray-400 hover:text-gray-600 mr-2"
+              className="text-[#8aa0b5] hover:text-[#2f8ec3] mr-2"
             >
               ✕
             </button>

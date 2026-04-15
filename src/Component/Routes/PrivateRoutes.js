@@ -1,16 +1,18 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { getRole, isLoggedIn } from "../../utils/auth";
 
-// Optional: you can pass allowedRoles if you want role-based routes
 const PrivateRoutes = ({ allowedRoles }) => {
-  const token = localStorage.getItem("token");
-
-  // Not logged in
-  if (!token) {
+  if (!isLoggedIn()) {
     return <Navigate to="/login" replace />;
   }
 
+  if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
+    const role = getRole();
+    if (!role || !allowedRoles.includes(role)) {
+      return <Navigate to="/" replace />;
+    }
+  }
 
-  // Token exists → allow access
   return <Outlet />;
 };
 

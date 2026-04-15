@@ -1,5 +1,8 @@
+import api from "./api";
+
 export const searchDoctors = async (text) => {
-  const res = await fetch(`/api/doctors/search?q=${encodeURIComponent(text)}`);
-  const data = await res.json();
+  const { data } = await api.get("/doctors/search", {
+    params: { q: text },
+  });
   return data;
 };

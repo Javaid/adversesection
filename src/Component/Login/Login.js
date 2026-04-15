@@ -1,24 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import api from "../../api/api";
+import { isLoggedIn, setAuthSession } from "../../utils/auth";
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const loggedUser = localStorage.getItem("token");
-
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
-    role: "user",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // AFTER hooks conditional return
-if (loggedUser) {
-  return <Navigate to="/" replace />;
-}
+  if (isLoggedIn()) {
+    return <Navigate to="/" replace />;
+  }
 
 
   const handleChange = (e) => {
@@ -37,11 +34,11 @@ if (loggedUser) {
 
       const data = res.data;
 
-      localStorage.setItem("token", data.token);
-     
+      setAuthSession(data.token);
+
       navigate("/", { replace: true });
     } catch (err) {
-      setError("Server error");
+      setError(err?.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -80,16 +77,6 @@ if (loggedUser) {
           required
           className="w-full mb-6 px-4 py-2 border rounded-md"
         />
-        <select
-          name="role"
-          value={credentials.role}
-          onChange={handleChange}
-          className="w-full mb-4 px-4 py-2 border rounded-md"
-        >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-
         <button
           type="submit"
           disabled={loading}

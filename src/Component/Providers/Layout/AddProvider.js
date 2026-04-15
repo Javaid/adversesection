@@ -43,7 +43,7 @@ function AddProvider() {
     }
   };
 
-  
+
   useEffect(() => {
     if (npi.length !== 10) return;
 
@@ -99,114 +99,116 @@ function AddProvider() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Add New Provider</h1>
+    <div className="w-full px-4 py-8 bg-[#eef3f8] min-h-[calc(100vh-64px)]">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#2e4358]">Add New Provider</h1>
+            <p className="text-sm text-[#6c8094] mt-1">
+              Search by NPI and verify the provider details before adding.
+            </p>
+          </div>
+
           <button
             onClick={() => navigate('/')}
-            className="text-gray-600 hover:text-gray-800 text-sm"
+            className="text-[#5f7890] hover:text-[#2f8ec3] text-sm font-medium"
           >
             ← Back to Providers
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-       
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              NPI Number *
-            </label>
-            <input
-              type="text"
-              value={npi}
-              onChange={handleNpiChange}
-              placeholder="Enter 10-digit NPI"
-              maxLength="10"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-            {/* {isLoading && (
-              <p className="text-blue-600 text-sm mt-1 flex items-center">
-                <span className="animate-spin mr-2">⏳</span>
-                Fetching provider data...
-              </p>
-            )} */}
-            {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
-            {success && <p className="text-green-600 text-sm mt-1">{success}</p>}
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl border border-[#d8e4ef] shadow-sm p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Provider Name
+              <label className="block text-sm font-semibold text-[#2e4358] mb-2">
+                NPI Number *
               </label>
               <input
                 type="text"
-                value={formData.providerName}
-                onChange={(e) => setFormData({...formData, providerName: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder=""
+                value={npi}
+                onChange={handleNpiChange}
+                placeholder="Enter 10-digit NPI"
+                maxLength="10"
+                className="w-full p-3 border border-[#d8e4ef] rounded-lg bg-[#fbfdff] focus:ring-2 focus:ring-[#4fa7d8] focus:border-[#4fa7d8] outline-none"
+                required
               />
+              <div className="mt-2 min-h-6">
+                {isLoading && (
+                  <p className="text-[#2f8ec3] text-sm">Fetching provider data...</p>
+                )}
+                {error && <p className="text-red-600 text-sm">{error}</p>}
+                {success && <p className="text-green-600 text-sm">{success}</p>}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Speciality
-              </label>
-              <input
-                type="text"
-                value={formData.speciality}
-                onChange={(e) => setFormData({...formData, speciality: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder=""
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div>
+                <label className="block text-sm font-medium text-[#5f7890] mb-2">
+                  Provider Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.providerName}
+                  onChange={(e) => setFormData({ ...formData, providerName: e.target.value })}
+                  className="w-full p-3 border border-[#d8e4ef] rounded-lg bg-[#fbfdff] focus:ring-2 focus:ring-[#4fa7d8] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#5f7890] mb-2">
+                  Speciality
+                </label>
+                <input
+                  type="text"
+                  value={formData.speciality}
+                  onChange={(e) => setFormData({ ...formData, speciality: e.target.value })}
+                  className="w-full p-3 border border-[#d8e4ef] rounded-lg bg-[#fbfdff] focus:ring-2 focus:ring-[#4fa7d8] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#5f7890] mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full p-3 border border-[#d8e4ef] rounded-lg bg-[#fbfdff] focus:ring-2 focus:ring-[#4fa7d8] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#5f7890] mb-2">
+                  NPI Status
+                </label>
+                <input
+                  type="text"
+                  value={formData.NPI_Status}
+                  onChange={(e) => setFormData({ ...formData, NPI_Status: e.target.value })}
+                  className="w-full p-3 border border-[#d8e4ef] rounded-lg bg-[#fbfdff] focus:ring-2 focus:ring-[#4fa7d8] outline-none"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder=""
-              />
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <button
+                type="submit"
+                className="sm:flex-1 bg-[#4fa7d8] text-white py-3 px-6 rounded-lg hover:bg-[#2f8ec3] transition duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!npi || npi.length !== 10 || isLoading}
+              >
+                Add Provider
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="sm:flex-1 bg-[#e8f3fa] text-[#2f8ec3] py-3 px-6 rounded-lg hover:bg-[#d9ecf8] transition duration-200"
+              >
+                Cancel
+              </button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                NPI Status
-              </label>
-              <input
-                type="text"
-                value={formData.NPI_Status}
-                onChange={(e) => setFormData({...formData, NPI_Status: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder=""
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-4 pt-6">
-            <button
-              type="submit"
-              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200"
-              disabled={!npi || npi.length !== 10}
-            >
-              Add Provider
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="flex-1 bg-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-400 transition duration-200"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

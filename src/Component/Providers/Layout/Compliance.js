@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaEdit } from "react-icons/fa";
-import axios from "axios";
+import api from "../../../api/api";
+import SectionShell from "./common/SectionShell";
 
 function Compliance({ provider, refreshProvider }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [complianceData, setComplianceData] = useState([]);
-const [formData, setFormData] = useState({
-  npiType: "",
-  enumerationDate: "",
-  startDate: "",
-  endDate: "",
-  soleProprietor: false,
-  status: "",
-});
+  const [formData, setFormData] = useState({
+    npiType: "",
+    enumerationDate: "",
+    startDate: "",
+    endDate: "",
+    soleProprietor: false,
+    status: "",
+  });
   // Sync compliance data if provider changes
   useEffect(() => {
     setComplianceData(provider?.compliance || []);
@@ -22,14 +23,14 @@ const [formData, setFormData] = useState({
   // Handle Add
   const handleAdd = () => {
     setEditingIndex(null);
-  setFormData({
-  npiType: "",
-  enumerationDate: "",
-  startDate: "",
-  endDate: "",
-  soleProprietor: false,
-  status: "",
-});
+    setFormData({
+      npiType: "",
+      enumerationDate: "",
+      startDate: "",
+      endDate: "",
+      soleProprietor: false,
+      status: "",
+    });
     setIsModalOpen(true);
   };
 
@@ -38,20 +39,20 @@ const [formData, setFormData] = useState({
     const selected = complianceData[index];
 
     setEditingIndex(index);
-  setFormData({
-  npiType: selected.npi_type || "",
-  enumerationDate: selected.enumeration_date
-    ? selected.enumeration_date.split("T")[0]
-    : "",
-  startDate: selected.start_date
-    ? selected.start_date.split("T")[0]
-    : "",
-  endDate: selected.end_date
-    ? selected.end_date.split("T")[0]
-    : "",
-  soleProprietor: selected.sole_proprietor || false,
-  status: selected.status || "",
-});
+    setFormData({
+      npiType: selected.npi_type || "",
+      enumerationDate: selected.enumeration_date
+        ? selected.enumeration_date.split("T")[0]
+        : "",
+      startDate: selected.start_date
+        ? selected.start_date.split("T")[0]
+        : "",
+      endDate: selected.end_date
+        ? selected.end_date.split("T")[0]
+        : "",
+      soleProprietor: selected.sole_proprietor || false,
+      status: selected.status || "",
+    });
 
     setIsModalOpen(true);
   };
@@ -61,9 +62,7 @@ const [formData, setFormData] = useState({
     if (!window.confirm("Are you sure you want to delete this compliance?")) return;
 
     try {
-      await axios.delete(
-        `http://localhost:5000/api/providerss/compliance/${id}`
-      );
+      await api.delete(`/providerss/compliance/${id}`);
 
       const updated = [...complianceData];
       updated.splice(index, 1);
@@ -87,11 +86,11 @@ const [formData, setFormData] = useState({
 
   // Handle Save (Add + Update via backend logic)
   const handleSave = async () => {
-   
+
     try {
-      const response = await axios.post(
-        `http://localhost:5000/api/providerss/${provider.id}/compliance`,
-        formData
+      const response = await api.post(
+        `/providerss/${provider.id}/compliance`,
+        formData,
       );
 
       const savedCompliance = response.data.compliance;
@@ -118,39 +117,35 @@ const [formData, setFormData] = useState({
   ).length;
 
   return (
-    <div className="p-6 bg-gray-50 overflow-x-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">
-          Compliance & Exclusion Monitoring
-        </h2>
-
-        <div className="flex items-center gap-4">
-          <span className="text-green-700 text-sm font-medium">
+    <SectionShell
+      title="Compliance & Exclusion Monitoring"
+      actions={(
+        <>
+          <span className="text-green-700 text-sm font-medium bg-green-50 border border-green-200 px-3 py-1 rounded-full">
             ✔ {clearCount}/{complianceData.length} Sources Clear
           </span>
-
           <button
             onClick={handleAdd}
-            className="flex items-center gap-2 px-3 py-2  text-blue-600 rounded hover:bg-blue-700"
+            className="flex items-center gap-2 px-3 py-2 text-[#2f8ec3] border border-[#bcd7ea] rounded-md hover:bg-[#e8f3fa]"
           >
-            <FaPlus /> 
+            <FaPlus />
           </button>
-        </div>
-      </div>
+        </>
+      )}
+    >
 
       {/* Table */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 overflow-x-auto">
-        <h3 className="text-lg font-semibold mb-4 ">
+      <div className="bg-white border border-[#d8e4ef] rounded-lg p-6 overflow-x-auto">
+        <h3 className="text-lg font-semibold text-[#2e4358] mb-4 ">
           Federal & State Exclusion Status
         </h3>
 
         <table className="w-full text-sm min-w-max">
           <thead>
-            <tr className="border-b text-gray-500 bg-gray-100">
-             
+            <tr className="border-b border-[#d8e4ef] text-[#6c8094] bg-[#f6f9fc]">
+
               <th className="text-left py-3 font-medium">NPI Type</th>
-             <th className="text-left py-3 font-medium">Start Date</th>
+              <th className="text-left py-3 font-medium">Start Date</th>
               <th className="text-left py-3 font-medium">End Date</th>
               <th className="text-left py-3 font-medium">
                 Enumeration Date
@@ -166,30 +161,30 @@ const [formData, setFormData] = useState({
           <tbody>
             {complianceData.length > 0 ? (
               complianceData.map((row, index) => (
-                <tr key={row.id} className="border-b last:border-none">
-    
+                <tr key={row.id} className="border-b border-[#edf3f8] last:border-none">
+
 
                   <td>{row.npi_type}</td>
 
 
-<td>
-  {row.start_date
-    ? new Date(row.start_date).toISOString().split("T")[0]
-    : ""}
-</td>
+                  <td>
+                    {row.start_date
+                      ? new Date(row.start_date).toISOString().split("T")[0]
+                      : ""}
+                  </td>
 
-<td>
-  {row.end_date
-    ? new Date(row.end_date).toISOString().split("T")[0]
-    : ""}
-</td>
+                  <td>
+                    {row.end_date
+                      ? new Date(row.end_date).toISOString().split("T")[0]
+                      : ""}
+                  </td>
 
 
                   <td>
                     {row.enumeration_date
                       ? new Date(row.enumeration_date)
-                          .toISOString()
-                          .split("T")[0]
+                        .toISOString()
+                        .split("T")[0]
                       : ""}
                   </td>
 
@@ -205,16 +200,13 @@ const [formData, setFormData] = useState({
                       onClick={() => handleEdit(index)}
                     />
 
-                  
+
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td
-                  colSpan={7}
-                  className="py-6 text-center text-gray-500"
-                >
+                <td colSpan={7} className="py-6 text-center text-[#7f96ab]">
                   No records available
                 </td>
               </tr>
@@ -233,7 +225,7 @@ const [formData, setFormData] = useState({
                 : "Add Compliance"}
             </h3>
 
-         
+
 
             <input
               type="text"
@@ -245,20 +237,20 @@ const [formData, setFormData] = useState({
             />
 
             <input
-  type="date"
-  name="startDate"
-  value={formData.startDate}
-  onChange={handleChange}
-  className="border p-2 w-full mb-2"
-/>
+              type="date"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleChange}
+              className="border p-2 w-full mb-2"
+            />
 
-<input
-  type="date"
-  name="endDate"
-  value={formData.endDate}
-  onChange={handleChange}
-  className="border p-2 w-full mb-2"
-/>
+            <input
+              type="date"
+              name="endDate"
+              value={formData.endDate}
+              onChange={handleChange}
+              className="border p-2 w-full mb-2"
+            />
 
             <input
               type="date"
@@ -306,7 +298,7 @@ const [formData, setFormData] = useState({
           </div>
         </div>
       )}
-    </div>
+    </SectionShell>
   );
 }
 

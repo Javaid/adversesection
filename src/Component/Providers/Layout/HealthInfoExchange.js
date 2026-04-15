@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaEdit } from "react-icons/fa";
-import axios from "axios";
+import api from "../../../api/api";
+import SectionShell from "./common/SectionShell";
 
 function HealthInfoExchange({ provider }) {
   const [healthData, setHealthData] = useState([]);
@@ -23,9 +24,7 @@ function HealthInfoExchange({ provider }) {
 
   const fetchHealthInfo = async () => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/providerss/${provider.id}/healthinfo`,
-      );
+      const res = await api.get(`/providerss/${provider.id}/healthinfo`);
       setHealthData(res.data);
     } catch (err) {
       console.error("Fetch error", err);
@@ -68,9 +67,7 @@ function HealthInfoExchange({ provider }) {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     try {
-      await axios.delete(
-        `http://localhost:5000/api/providerss/health_info/${id}`,
-      );
+      await api.delete(`/providerss/health_info/${id}`);
       fetchHealthInfo();
     } catch (err) {
       console.error("Delete error", err);
@@ -79,10 +76,7 @@ function HealthInfoExchange({ provider }) {
 
   const handleSave = async () => {
     try {
-      await axios.post(
-        `http://localhost:5000/api/providerss/${provider.id}/healthinfo`,
-        formData,
-      );
+      await api.post(`/providerss/${provider.id}/healthinfo`, formData);
       fetchHealthInfo();
       setIsModalOpen(false);
     } catch (err) {
@@ -91,17 +85,17 @@ function HealthInfoExchange({ provider }) {
   };
 
   return (
-    <div className="p-6 bg-gray-50 overflow-x-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">Health Information Exchange</h2>
+    <SectionShell
+      title="Health Information Exchange"
+      actions={(
         <button
           onClick={handleAdd}
-          className="flex items-center gap-2 px-4 py-2 text-blue-500 rounded"
+          className="flex items-center gap-2 px-4 py-2 text-[#2f8ec3] border border-[#bcd7ea] rounded-md hover:bg-[#e8f3fa]"
         >
           <FaPlus />
         </button>
-      </div>
+      )}
+    >
 
       {/* Table */}
       <div className="rounded-lg border border-gray-200 bg-white">
@@ -193,7 +187,7 @@ function HealthInfoExchange({ provider }) {
           </div>
         </div>
       )}
-    </div>
+    </SectionShell>
   );
 }
 

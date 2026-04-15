@@ -3,8 +3,8 @@ require("./config/db");
 const sequelize = require("./config/db");
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors"); 
-const { initUserIndex } = require('./initUserIndex'); 
+const cors = require("cors");
+const { initUserIndex } = require('./initUserIndex');
 
 // controllers
 const { search, stats, providersList, loginController } = require("./controllers/authController");
@@ -40,7 +40,7 @@ app.use('/api/doctors', doctorRoutes);
 sequelize.sync().then(async () => {
   console.log("Database and table are synced");
   // Initialize Elasticsearch users index
-  await initUserIndex();
+  // await initUserIndex();
 });
 
 // Auth & search routes

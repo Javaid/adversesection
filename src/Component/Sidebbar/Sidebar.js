@@ -7,7 +7,6 @@ import {
   FiMapPin,
   FiAward,
   FiBookOpen,
-  FiDollarSign,
   FiGlobe,
 } from "react-icons/fi";
 
@@ -73,12 +72,6 @@ const Sidebar = () => {
       />
 
       <SidebarItem
-        icon={FiDollarSign}
-        label="Payment & Medicare"
-        onClick={() => scrollToSection("payment")}
-      />
-
-      <SidebarItem
         icon={FiGlobe}
         label="Digital Presence"
         onClick={() => scrollToSection("digitalPresence")}
@@ -92,7 +85,7 @@ const SidebarItem = ({ icon: Icon, label, onClick }) => {
     <div
       onClick={onClick}
       className="flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer text-sm transition whitespace-nowrap
-      text-gray-600 hover:bg-blue-900 hover:text-white"
+      text-[#5f7890] hover:bg-[#e8f3fa] hover:text-[#2f8ec3]"
     >
       <Icon className="w-5 h-5 flex-shrink-0" />
       <span className="font-medium">{label}</span>

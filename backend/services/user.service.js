@@ -18,7 +18,10 @@ const login = async (username, password) => {
   );
 
   if (results.length === 0) {
+    console.log(password);
     const pwd = hashPassword(password);
+    console.log('---------------------');
+    console.log(pwd);
     results = await sequelize.query(
       "SELECT * FROM login WHERE username = :username AND password = :pwd",
       {
