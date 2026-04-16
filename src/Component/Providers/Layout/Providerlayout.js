@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { BsCheckCircle } from "react-icons/bs";
 import { FiAlertTriangle } from "react-icons/fi";
+import { FiCopy } from "react-icons/fi";
 import { RxCrossCircled } from "react-icons/rx";
 import { MdVerified } from "react-icons/md";
 
@@ -88,6 +89,36 @@ function Providerlayout() {
 
         return result;
     }, [provider]);
+
+    const sourceOfTruthFields = useMemo(() => {
+        const taxonomyRows = Array.isArray(provider?.taxonomy) ? provider.taxonomy : [];
+
+        const getValues = (key) => {
+            const values = taxonomyRows
+                .map((row) => row?.[key])
+                .filter((value) => value !== null && value !== undefined && String(value).trim() !== "")
+                .map((value) => String(value).trim());
+
+            return values.length > 0 ? Array.from(new Set(values)).join(", ") : "-";
+        };
+
+        return [
+            { label: "License Number", value: getValues("license_number") },
+            { label: "Status", value: getValues("status") },
+            { label: "Source URL", value: getValues("source_url") },
+            { label: "Document Link", value: getValues("document_link") },
+        ];
+    }, [provider?.taxonomy]);
+
+    const copyToClipboard = async (text) => {
+        if (!text || text === "-") return;
+
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            // Silent fail to avoid interrupting user flow if clipboard API is unavailable.
+        }
+    };
 
     const riskConfig = {
         low: {
@@ -183,6 +214,30 @@ function Providerlayout() {
                                 <h2 className={`text-sm font-semibold ${issues.length > 0 ? "text-amber-800" : "text-emerald-800"}`}>
                                     Source Of Truth Check
                                 </h2>
+                                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    {sourceOfTruthFields.map((field) => (
+                                        <div
+                                            key={field.label}
+                                            className={`rounded-lg border p-3 ${issues.length > 0 ? "bg-white/80 border-amber-200" : "bg-white/80 border-emerald-200"}`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="text-xs text-[#6c8094]">{field.label}</p>
+                                                {(field.label === "Source URL" || field.label === "Document Link") && field.value !== "-" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => copyToClipboard(field.value)}
+                                                        className="text-[#6c8094] hover:text-[#2f8ec3]"
+                                                        title={`Copy ${field.label}`}
+                                                        aria-label={`Copy ${field.label}`}
+                                                    >
+                                                        <FiCopy className="text-sm" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-[#2e4358] mt-1 break-words">{field.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
                                 {issues.length > 0 ? (
                                     <div className="mt-3 space-y-2">
                                         {issues.map((issue, index) => (

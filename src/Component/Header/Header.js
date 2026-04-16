@@ -21,10 +21,10 @@ const Header = () => {
       {/* Logo & Title */}
       <div className="flex items-center space-x-3 mb-4 md:mb-0">
         <div className="bg-[#4fa7d8] text-white rounded-md w-10 h-10 flex items-center justify-center font-bold text-lg shadow-sm">
-          PA
+          PAS
         </div>
         <span className="font-semibold text-[#2e4358] text-xl">
-          Provider Adverse
+          Provider Adverse Section
         </span>
       </div>
 
