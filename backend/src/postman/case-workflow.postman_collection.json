@@ -1,0 +1,159 @@
+{
+    "info": {
+        "name": "Case Workflow API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": "Requests for case workflow endpoints"
+    },
+    "item": [
+        {
+            "name": "Create Case",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases",
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"title\": \"Manual review required\",\n  \"description\": \"Created from Postman collection\",\n  \"severity\": \"High\"\n}"
+                }
+            }
+        },
+        {
+            "name": "List Cases",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases?page=1&limit=20"
+            }
+        },
+        {
+            "name": "Get Case By Id",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases/{{caseId}}"
+            }
+        },
+        {
+            "name": "Update Case Status",
+            "request": {
+                "method": "PATCH",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases/{{caseId}}/status",
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"status\": \"Under Review\",\n  \"reason\": \"Initial triage started\"\n}"
+                }
+            }
+        },
+        {
+            "name": "Assign Case",
+            "request": {
+                "method": "PATCH",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases/{{caseId}}/assignee",
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"assigned_to\": 1\n}"
+                }
+            }
+        },
+        {
+            "name": "Add Internal Note",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases/{{caseId}}/notes",
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"note_body\": \"Escalating for investigator review\"\n}"
+                }
+            }
+        },
+        {
+            "name": "Get SLA",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases/{{caseId}}/sla"
+            }
+        },
+        {
+            "name": "Get History",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/cases/{{caseId}}/history"
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000/api"
+        },
+        {
+            "key": "token",
+            "value": ""
+        },
+        {
+            "key": "caseId",
+            "value": "1"
+        }
+    ]
+}
